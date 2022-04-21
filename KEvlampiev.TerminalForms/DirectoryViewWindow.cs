@@ -13,6 +13,11 @@ namespace KEvlampiev.TerminalForms
         private int _startDirectoryIndex = 0;
 
         public string CurrentDirectory { get; set; }
+
+        /// <summary>
+        /// Список поддиректорий текущей директории
+        /// </summary>
+        public DirectoryInfo[] DirectoryTree { get; set; }
         
 
         public DirectoryViewWindow(int left, int top, int width, int height, string title, string currentDir):base(left,top,width,height,title)
@@ -28,9 +33,9 @@ namespace KEvlampiev.TerminalForms
         }
 
         //Вспомогательная функция, которая выдает все подкаталоги текущего каталога 
-        private string[] GetTree(string[] tree, DirectoryInfo dir) 
+        private DirectoryInfo[] GetTree(DirectoryInfo[] curDir, DirectoryInfo[] tree) 
         {
-            return new string[1];
+            return new DirectoryInfo[1];
         }
 
         //Вспомогательная функция. Заполняет внутренность окна 
