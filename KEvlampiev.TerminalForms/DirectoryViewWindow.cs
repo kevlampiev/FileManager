@@ -112,13 +112,15 @@ namespace KEvlampiev.TerminalForms
             //На всякий пожарный случай
             page = Math.Min(page,-(- fsObjectImages.Length/InnerColumns));
             
-            int startDiapason = (page - 1)*InnerLines;
-            int endDiapason = Math.Min(page*InnerLines - 1, fsObjectImages.Length -1);
+            int startDiapason = page*InnerLines;
+            int endDiapason = Math.Min((page+1)*InnerLines - 1, fsObjectImages.Length -1);
 
             for (int pos = startDiapason, currentLine = Top+1; pos <= endDiapason; pos++, currentLine++)
             {
                 Console.SetCursorPosition(Left + 1, currentLine);
-                Console.Write(fsObjectImages[pos].Substring(0,InnerColumns));
+                Console.ForegroundColor = Color;
+                Console.BackgroundColor = BackgroundColor;
+                Console.Write(fsObjectImages[pos].Substring(0, Math.Min(InnerColumns,fsObjectImages[pos].Length)));
             }
            
         }
