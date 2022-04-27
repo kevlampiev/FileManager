@@ -17,13 +17,14 @@ namespace FileManager
         //размер окна и буфера для отображения
         private int _windowHeight = 30;
         private int _windowWidth = 120;
+        private DirectoryInfo _currentDirectory;
 
         //Внутренние элементы для отображения
         private DirectoryViewWindow? _dirTree;
         private BashTerminal? _bash;
         private InfoPanel? _infoPanel;
 
-        public DirectoryInfo CurrentDirectory { get; set; }
+        public DirectoryInfo CurrentDirectory { get=>_currentDirectory; set { ChangeDir(value); } }
 
         public FMController(int windowHeight, int windowWidth) 
         {
@@ -36,11 +37,12 @@ namespace FileManager
             Console.SetBufferSize(_windowWidth, _windowHeight);
             //подумать чем их заменить 
             
-            CurrentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
-            _dirTree = new DirectoryViewWindow(0, 0, _windowWidth, _windowHeight - 10, "Directory tree", CurrentDirectory.FullName);
-            _infoPanel = new InfoPanel(0, _windowHeight - 10, _windowWidth, 8, "Info", CurrentDirectory.FullName);
-            _bash = new BashTerminal(0, _windowHeight - 1, _windowWidth, CurrentDirectory.FullName);
             
+            _dirTree = new DirectoryViewWindow(0, 0, _windowWidth, _windowHeight - 10, "Directory tree");
+            _infoPanel = new InfoPanel(0, _windowHeight - 10, _windowWidth, 8, "Info");
+            _bash = new BashTerminal(0, _windowHeight - 1, _windowWidth, Directory.GetCurrentDirectory());
+            CurrentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
             Repaint();
         }
 
@@ -55,6 +57,40 @@ namespace FileManager
             _bash.Repaint();
         }
 
+        //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd"
+        private string GuessDirname(string targetDir) 
+        {
+            if (targetDir == "..") { 
+                targetDir = CurrentDirectory.Parent.ToString();
+            }
+            else if (!targetDir.Contains(Path.DirectorySeparatorChar))
+            { 
+                targetDir = CurrentDirectory.FullName + Path.DirectorySeparatorChar +targetDir;
+            };
+            if (Directory.Exists(targetDir)) 
+            { 
+                return targetDir; 
+            } 
+            else 
+            { 
+                return CurrentDirectory.FullName; 
+            }
+            
+        }
+
+
+
+        //Вспомогательная функция чтобы все синхронизировалось при изменении свойства CurrentDirectory
+        private void ChangeDir(DirectoryInfo targetDir) 
+        {
+            if (Directory.Exists(targetDir.ToString())) {
+                _currentDirectory = targetDir;
+                _bash.CurrentDirectory = targetDir.FullName;
+                _dirTree.CurrentDirectory = targetDir;
+                _infoPanel.CurrentDirectory = targetDir;
+            }
+        }
+
 
         private void ParseCommandString(string command)
         {
@@ -64,13 +100,9 @@ namespace FileManager
                 switch (commandParams[0])
                 {
                     case "cd":
-                        if (commandParams.Length > 1 && Directory.Exists(commandParams[1]))
-                        {
-                            _bash.CurrentDirectory = commandParams[1];
-                            _dirTree.CurrentDirectory = new DirectoryInfo(commandParams[1]);
-                            _bash.Command.Clear();
-                            _bash.Repaint();
-                            _infoPanel.CurrentDirectory = new DirectoryInfo(commandParams[1]);
+                        if (commandParams.Length > 1 )
+                        { 
+                            CurrentDirectory = new DirectoryInfo(GuessDirname(commandParams[1]));
                         }
 
                         break;

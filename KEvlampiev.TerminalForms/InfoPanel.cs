@@ -30,10 +30,25 @@ namespace KEvlampiev.TerminalForms
         public override void Repaint()
         {
             base.Repaint();
-            Console.SetCursorPosition(Left+1, Top+1);
+            
+            Console.ForegroundColor = Color;
+            Console.BackgroundColor = BackgroundColor;
+
             string pathName = "Path: "+CurrentDirectory.FullName;
-            if (pathName.Length > Width-2) pathName = pathName.Substring(Width-2);
+            if (pathName.Length > Width-2) pathName = pathName.Substring(Width-5)+"...";
+
+            
+            Console.SetCursorPosition(Left + 1, Top + 1);
             Console.Write(pathName);
+
+            string timeCreated = CurrentDirectory.CreationTime.ToString();
+            Console.SetCursorPosition(Left + 1, Top + 2);
+            Console.Write("Time created: "+timeCreated);
+
+            string timeAccessed = CurrentDirectory.LastAccessTime.ToString();
+            Console.SetCursorPosition(Left + 1, Top + 3);
+            Console.Write("Last AccessTime: " + timeCreated);
+
         }
 
     }
