@@ -16,13 +16,16 @@ namespace KEvlampiev.TerminalForms
         //текущая страница
         private int _page=0;
 
+        //текущая директория
+        private DirectoryInfo _currentDirectory;
+
         /// <summary>
         /// Общее количество строк во внутреннем пространстве окна
         /// </summary>
         public int InnerLines { get =>(Height-2); }
 
         /// <summary>
-        /// Общее количество столбцова 
+        /// Общее количество столбцов
         /// </summary>
         public int InnerColumns { get => (Width - 2); }
 
@@ -33,7 +36,10 @@ namespace KEvlampiev.TerminalForms
         //Пока на паузе
         private int _startDirectoryIndex = 0;
 
-        public DirectoryInfo CurrentDirectory { get; set; }
+        /// <summary>
+        /// Текущая директория
+        /// </summary>
+        public DirectoryInfo CurrentDirectory { get=>_currentDirectory; set { _currentDirectory = value; Repaint(); } }
 
         /// <summary>
         /// Список поддиректорий текущей директории
