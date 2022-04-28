@@ -15,6 +15,12 @@ namespace KEvlampiev.TerminalForms
 
         //текущая страница
         private int _page=0;
+        //контент (уже готовый к отрисовке согласно данной идеологии)
+        private string[] _content;
+
+        //Поле того, чтобы понять, какая поддиректория/файл отображается на самом верху экрана окна
+        //Пока на паузе
+        private int _startDirectoryIndex = 0;
 
         //текущая директория
         private DirectoryInfo _currentDirectory;
@@ -29,17 +35,16 @@ namespace KEvlampiev.TerminalForms
         /// </summary>
         public int InnerColumns { get => (Width - 2); }
 
-        public int Page { get => _page; set { _page = value; } }
-
-
-        //Поле того, чтобы понять, какая поддиректория/файл отображается на самом верху экрана окна
-        //Пока на паузе
-        private int _startDirectoryIndex = 0;
+        /// <summary>
+        /// Текущая страница отображения списка директорий 
+        /// </summary>
+        public int Page { get => _page; set { SetPage(value); } }
+     
 
         /// <summary>
         /// Текущая директория
         /// </summary>
-        public DirectoryInfo CurrentDirectory { get=>_currentDirectory; set { _currentDirectory = value; Repaint(); } }
+        public DirectoryInfo CurrentDirectory { get=>_currentDirectory; set { SetCurrentDirectory(value); } }
 
         /// <summary>
         /// Список поддиректорий текущей директории
@@ -62,7 +67,7 @@ namespace KEvlampiev.TerminalForms
         public override void Repaint()
         {
             base.Repaint();
-            DrawDirectoryTree(CurrentDirectory, 0);
+            DrawDirectoryTree(CurrentDirectory);
 
         }
 
@@ -108,25 +113,50 @@ namespace KEvlampiev.TerminalForms
         }
         */
 
-        //Вспомогательная функция. Заполняет внутренность окна 
-        private void DrawDirectoryTree(DirectoryInfo dir, int page) 
+
+        //Вспомогательная функция, которая заготовляет контент для последующей отрисовки
+        private void GetContent() 
         {
+            DirectoryInfo dir = new DirectoryInfo(CurrentDirectory.FullName); //о то он черт знает что попанишет по адресу CurrentDirectory
             StringBuilder tree = new StringBuilder();
             GetTree(tree, dir, "", true);
-            string[] fsObjectImages = tree.ToString().Split("\n");
+            _content = tree.ToString().Split("\n");
+        }
 
-            //На всякий пожарный случай
-            page = Math.Min(page,-(- fsObjectImages.Length/InnerColumns));
+        private void SetCurrentDirectory(DirectoryInfo dir) 
+        {
+            _currentDirectory = dir;
+            _page = 0; 
+            _startDirectoryIndex = 0;
+            GetContent();
+            Repaint();
+        }
+
+        private void SetPage(int page) 
+        {
+
+            int totalPages=(_content.Length + InnerLines-2)/(InnerLines);
+            if (page >= totalPages) { _page = 0; }
+            else if (page < 0) 
+            { _page = totalPages - 1; }
+            else 
+            { _page = page; }
             
-            int startDiapason = page*InnerLines;
-            int endDiapason = Math.Min((page+1)*InnerLines - 1, fsObjectImages.Length -1);
+            Repaint();
+        }
+
+        //Вспомогательная функция. Заполняет внутренность окна 
+        private void DrawDirectoryTree(DirectoryInfo dir) 
+        {
+            int startDiapason = _page*InnerLines;
+            int endDiapason = Math.Min((_page+1)*InnerLines - 1, _content.Length -1);
 
             for (int pos = startDiapason, currentLine = Top+1; pos <= endDiapason; pos++, currentLine++)
             {
                 Console.SetCursorPosition(Left + 1, currentLine);
                 Console.ForegroundColor = Color;
                 Console.BackgroundColor = BackgroundColor;
-                Console.Write(fsObjectImages[pos].Substring(0, Math.Min(InnerColumns,fsObjectImages[pos].Length)));
+                Console.Write(_content[pos].Substring(0, Math.Min(InnerColumns,_content[pos].Length)));
             }
            
         }

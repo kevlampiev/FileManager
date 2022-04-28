@@ -106,7 +106,9 @@ namespace FileManager
                         }
 
                         break;
-                        /*
+                    /*    
+                     *    Мне показалось как-то нелогично делать вывод виректории в которой не находишься в окне File manager'а
+                     *    поэтому буду использовать комманду ls просто чтобы менять страницы просмотра списка текущей директории
                     case "ls":
                         if (commandParams.Length > 1 && Directory.Exists(commandParams[1]))
                         {
@@ -120,7 +122,28 @@ namespace FileManager
                             }
                         }
                         break;
-                        */
+                      */
+                    case "ls":
+                        if (commandParams.Length > 1)
+                        {
+                            if (commandParams[1] == "-p" && int.TryParse(commandParams[2], out int pageNumber)) 
+                            { 
+                                _dirTree.Page = pageNumber;
+                            }
+                            if (commandParams[1] == "--") 
+                            {
+                                _dirTree.Page--;
+                            }
+                            if (commandParams[1] == "++")
+                            {
+                                _dirTree.Page++;
+                            }
+                        }
+                        else 
+                        {
+                            _dirTree.Page++;
+                        }
+                        break;
                 }
             }
             //UpdateConsole();
