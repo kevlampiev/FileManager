@@ -16,10 +16,10 @@ namespace FileManager
  
         static void Main(string[] arg)
         {
-            
+            //Это очень важное дополнение 
             FMController fMController = new FMController(WINDOW_HEIGHT, WINDOW_WIDTH);
             fMController.Run();
-            fMController.Done();
+            //fMController.Done();
 
         }
     }
