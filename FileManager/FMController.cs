@@ -57,6 +57,9 @@ namespace FileManager
             _bash.Repaint();
         }
 
+
+ 
+
         //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd"
         private string GuessDirname(string targetDir) 
         {
@@ -75,11 +78,87 @@ namespace FileManager
             { 
                 return CurrentDirectory.FullName; 
             }
+        }
+
+
+        private string GuessDestinationDirname(string destinationDir) 
+        {
+            if (Directory.Exists(destinationDir)) 
+            {
+                return destinationDir;
+            }
+            if (!destinationDir.Contains(Path.DirectorySeparatorChar))
+            {
+               return CurrentDirectory.FullName + Path.DirectorySeparatorChar + destinationDir;
+            }
+            return CurrentDirectory.FullName;
             
         }
 
 
+        //Копирование файла при условии, что исходный файл есть 100%
+        private void CopyFile(string sourceFilename, string destinationFilename)
+        {
+            try
+            {
+                File.Copy(sourceFilename, destinationFilename, true);
+            }
+            catch (Exception e)
+            {
+                Utils.DisplayError(e.Message);
+                Repaint();
+            }
+        }
 
+        private void CopyDirectory(string sourceDirectory, string destinationDirectory) 
+        { 
+             string[] subDirs = Directory.GetDirectories(sourceDirectory, "*", SearchOption.AllDirectories);
+            foreach (string subDir in subDirs)
+            {
+                try
+                {
+                    Directory.CreateDirectory(subDir.Replace(sourceDirectory, destinationDirectory));
+                } catch (Exception e) {
+                    Utils.DisplayError(e.Message);
+                    Repaint ();
+                }
+            }
+
+            string[] files = Directory.GetFiles(sourceDirectory, "*.*", SearchOption.AllDirectories);
+            foreach (string file in files) 
+            {
+                try { 
+                    File.Copy(file, file.Replace(sourceDirectory, destinationDirectory), true);
+                } catch (Exception e) {
+                    Utils.DisplayError(e.Message);
+                    Repaint () ;
+                }
+            }
+            
+        }
+
+        private void CopyObjects(string source, string destination) 
+        {
+            if (File.Exists(source)) 
+            {
+                CopyFile(source, destination);
+                return;
+            } 
+            source = GuessDirname((string)source);
+            destination= GuessDestinationDirname((string)destination);
+
+            if (Directory.Exists(source)) 
+            { 
+                CopyDirectory(source, destination);    
+            } 
+            else 
+            {
+                Utils.DisplayError($"Объект {source} не обнаружен");
+                Repaint();
+            }
+           CurrentDirectory = CurrentDirectory ;
+        }
+ 
         //Вспомогательная функция чтобы все синхронизировалось при изменении свойства CurrentDirectory
         private void ChangeDir(DirectoryInfo targetDir) 
         {
@@ -107,7 +186,7 @@ namespace FileManager
 
                         break;
                     /*    
-                     *    Мне показалось как-то нелогично делать вывод виректории в которой не находишься в окне File manager'а
+                     *    Мне показалось как-то нелогично делать вывод директории в которой не находишься в окне File manager'а
                      *    поэтому буду использовать комманду ls просто чтобы менять страницы просмотра списка текущей директории
                     case "ls":
                         if (commandParams.Length > 1 && Directory.Exists(commandParams[1]))
@@ -144,6 +223,16 @@ namespace FileManager
                             _dirTree.Page++;
                         }
                         break;
+                    case "cp":
+                        if (commandParams.Length > 2)
+                        {
+                            CopyObjects(commandParams[1], commandParams[2]);
+                        }
+                        else 
+                        {
+                            //Сделать окно с ошибкой как в MC
+                        }
+                        break ;
                 }
             }
             //UpdateConsole();
