@@ -100,7 +100,7 @@ namespace KEvlampiev.TerminalForms
                 }
             }
             catch (Exception ex) {
-                Utils.DisplayError(ex.Message); 
+                
             }
 
             try {
@@ -110,7 +110,7 @@ namespace KEvlampiev.TerminalForms
                     GetTree(tree, innerDirectory, indent, innerDirectory == innerDirectories.Last());
                 }
             } catch (Exception ex) {
-                Utils.DisplayError(ex.Message);
+                
             }
 
             

@@ -58,6 +58,13 @@ namespace FileManager
         }
 
 
+
+        private void CancelCommand(string message) 
+        { 
+            Utils.DisplayError(message);
+            Repaint();
+            _bash.Command = new StringBuilder();
+        }
  
 
         //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd"
@@ -105,8 +112,7 @@ namespace FileManager
             }
             catch (Exception e)
             {
-                Utils.DisplayError(e.Message);
-                Repaint();
+                CancelCommand(e.Message);
             }
         }
 
@@ -119,8 +125,7 @@ namespace FileManager
                 {
                     Directory.CreateDirectory(subDir.Replace(sourceDirectory, destinationDirectory));
                 } catch (Exception e) {
-                    Utils.DisplayError(e.Message);
-                    Repaint ();
+                    CancelCommand(e.Message);
                 }
             }
 
@@ -130,8 +135,7 @@ namespace FileManager
                 try { 
                     File.Copy(file, file.Replace(sourceDirectory, destinationDirectory), true);
                 } catch (Exception e) {
-                    Utils.DisplayError(e.Message);
-                    Repaint () ;
+                    CancelCommand(e.Message);
                 }
             }
             
@@ -153,8 +157,7 @@ namespace FileManager
             } 
             else 
             {
-                Utils.DisplayError($"Объект {source} не обнаружен");
-                Repaint();
+                CancelCommand($"Объект {source} не обнаружен");
             }
            CurrentDirectory = CurrentDirectory ;
         }
@@ -162,11 +165,19 @@ namespace FileManager
         //Вспомогательная функция чтобы все синхронизировалось при изменении свойства CurrentDirectory
         private void ChangeDir(DirectoryInfo targetDir) 
         {
-            if (Directory.Exists(targetDir.ToString())) {
-                _currentDirectory = targetDir;
-                _bash.CurrentDirectory = targetDir.FullName;
-                _dirTree.CurrentDirectory = targetDir;
-                _infoPanel.CurrentDirectory = targetDir;
+            try
+            {
+                if (Directory.Exists(targetDir.ToString()))
+                {
+                    _currentDirectory = targetDir;
+                    _dirTree.CurrentDirectory = targetDir;
+                    _bash.CurrentDirectory = targetDir.FullName;
+                    _infoPanel.CurrentDirectory = targetDir;
+                }
+            }
+            catch (Exception e) 
+            {
+                CancelCommand(e.Message);
             }
         }
 
@@ -230,7 +241,7 @@ namespace FileManager
                         }
                         else 
                         {
-                            //Сделать окно с ошибкой как в MC
+                            CancelCommand("Неправильный формат команды");
                         }
                         break ;
                 }
