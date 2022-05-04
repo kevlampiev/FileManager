@@ -189,7 +189,10 @@ namespace FileManager
                     RemoveDirectory(d);
                 }
                 catch (Exception e)
-                { CancelCommand(e.Message); }
+                { 
+                    CancelCommand(e.Message);
+                    return;
+                }
             }
 
             foreach(string f in files) { RemoveFile(f); }
