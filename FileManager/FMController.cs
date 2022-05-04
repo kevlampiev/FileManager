@@ -143,6 +143,7 @@ namespace FileManager
 
         private void CopyObjects(string source, string destination) 
         {
+            Console.CursorVisible = false;
             if (File.Exists(source)) 
             {
                 CopyFile(source, destination);
@@ -160,11 +161,13 @@ namespace FileManager
                 CancelCommand($"Объект {source} не обнаружен");
             }
            CurrentDirectory = CurrentDirectory ;
+            Console.CursorVisible = true;
         }
  
         //Вспомогательная функция чтобы все синхронизировалось при изменении свойства CurrentDirectory
         private void ChangeDir(DirectoryInfo targetDir) 
         {
+            Console.CursorVisible = false; 
             try
             {
                 if (Directory.Exists(targetDir.ToString()))
@@ -179,6 +182,7 @@ namespace FileManager
             {
                 CancelCommand(e.Message);
             }
+            Console.CursorVisible = true;
         }
 
 
