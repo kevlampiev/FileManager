@@ -67,7 +67,7 @@ namespace FileManager
         }
  
 
-        //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd"
+        //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd", "cp" или "rm"
         private string GuessDirname(string targetDir) 
         {
             if (targetDir == "..") { 
@@ -87,7 +87,7 @@ namespace FileManager
             }
         }
 
-
+        //Вспомогательная функция, только уже для папки назначения
         private string GuessDestinationDirname(string destinationDir) 
         {
             if (Directory.Exists(destinationDir)) 
@@ -163,6 +163,57 @@ namespace FileManager
            CurrentDirectory = CurrentDirectory ;
             Console.CursorVisible = true;
         }
+
+        //Вспомогательная функция по удалению файла
+        private void RemoveFile(string fileName) 
+        {
+            try 
+            { 
+                File.Delete(fileName);
+            } 
+            catch( Exception e) 
+            { 
+                CancelCommand(e.Message);
+            }
+        
+        }
+
+        //Вспомогательная функция удаления директории
+        private void RemoveDirectory(string directoryName) 
+        { 
+            string[] directories = Directory.GetDirectories(directoryName);
+            string[] files = Directory.GetFiles(directoryName);
+            foreach (string d in directories) {
+                try
+                {
+                    RemoveDirectory(d);
+                }
+                catch (Exception e)
+                { CancelCommand(e.Message); }
+            }
+
+            foreach(string f in files) { RemoveFile(f); }
+            Directory.Delete(directoryName); //а достаточно было добавить true вторым параметром
+        
+        }
+
+
+        private void RemoveObject(string objName) 
+        {
+            if (File.Exists(objName)) 
+            { 
+               RemoveFile(objName);
+                CurrentDirectory = CurrentDirectory;
+                return ;  
+            }
+            if (Directory.Exists(GuessDirname(objName))) 
+            { 
+                RemoveDirectory(GuessDirname(objName));
+                CurrentDirectory = CurrentDirectory;
+                return; 
+            }
+            CancelCommand($"Объект {objName}не существует");
+        }
  
         //Вспомогательная функция чтобы все синхронизировалось при изменении свойства CurrentDirectory
         private void ChangeDir(DirectoryInfo targetDir) 
@@ -203,20 +254,7 @@ namespace FileManager
                     /*    
                      *    Мне показалось как-то нелогично делать вывод директории в которой не находишься в окне File manager'а
                      *    поэтому буду использовать комманду ls просто чтобы менять страницы просмотра списка текущей директории
-                    case "ls":
-                        if (commandParams.Length > 1 && Directory.Exists(commandParams[1]))
-                        {
-                            if (commandParams.Length > 3 && commandParams[2] == "-p" && int.TryParse(commandParams[3], out int n))
-                            {
-                                DrawTree(new DirectoryInfo(commandParams[1]), n);
-                            }
-                            else
-                            {
-                                DrawTree(new DirectoryInfo(commandParams[1]), 1);
-                            }
-                        }
-                        break;
-                      */
+                     */
                     case "ls":
                         if (commandParams.Length > 1)
                         {
@@ -248,6 +286,18 @@ namespace FileManager
                             CancelCommand("Неправильный формат команды");
                         }
                         break ;
+                    case "rm":
+                        if (commandParams.Length > 1)
+                        {
+                            RemoveObject(commandParams[1]);
+                        }
+                        else
+                        {
+                            CancelCommand("Не задано имя удаляемого объекта");
+                        }
+                        break;
+                    default: CancelCommand("Неизвестная команда"); break;
+
                 }
             }
             //UpdateConsole();
