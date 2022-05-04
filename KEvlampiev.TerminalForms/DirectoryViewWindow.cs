@@ -84,23 +84,36 @@ namespace KEvlampiev.TerminalForms
                 indent += _anotherLevelSign;
             };
             tree.Append($"{dir.Name}\n");
-            FileInfo[] innerFiles = dir.GetFiles();
-            foreach (FileInfo innerFile in innerFiles) 
-            {
-                if (innerFile == innerFiles.Last())
+            try { 
+                FileInfo[] innerFiles = dir.GetFiles(); 
+            
+                foreach (FileInfo innerFile in innerFiles) 
                 {
-                    tree.Append($"{indent}{_lastDirTreeSign}{innerFile.Name} \n");
-                }
-                else
-                {
-                    tree.Append($"{indent}{_dirTreeSign}{innerFile.Name} \n");
+                    if (innerFile == innerFiles.Last())
+                    {
+                        tree.Append($"{indent}{_lastDirTreeSign}{innerFile.Name} \n");
+                    }
+                    else
+                    {
+                        tree.Append($"{indent}{_dirTreeSign}{innerFile.Name} \n");
+                    }
                 }
             }
-            DirectoryInfo[] innerDirectories = dir.GetDirectories();
-            foreach (DirectoryInfo innerDirectory in innerDirectories) 
-            { 
-                GetTree(tree, innerDirectory, indent, innerDirectory == innerDirectories.Last());
+            catch (Exception ex) {
+                
             }
+
+            try {
+                DirectoryInfo[] innerDirectories = dir.GetDirectories();
+                foreach (DirectoryInfo innerDirectory in innerDirectories)
+                {
+                    GetTree(tree, innerDirectory, indent, innerDirectory == innerDirectories.Last());
+                }
+            } catch (Exception ex) {
+                
+            }
+
+            
         }
 
         /*

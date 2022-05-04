@@ -12,5 +12,15 @@ namespace KEvlampiev.TerminalForms
         {
             return (Console.CursorLeft, Console.CursorTop);
         }
+
+        public static void DisplayError(string message)
+        {
+            ErrorWindow errorWindow = new ErrorWindow(message);
+            errorWindow.Repaint();
+            Console.CursorVisible = false;
+            Console.ReadKey(true);
+            Console.CursorVisible = true;
+            
+        }
     }
 }

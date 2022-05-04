@@ -57,6 +57,16 @@ namespace FileManager
             _bash.Repaint();
         }
 
+
+
+        private void CancelCommand(string message) 
+        { 
+            Utils.DisplayError(message);
+            Repaint();
+            _bash.Command = new StringBuilder();
+        }
+ 
+
         //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd"
         private string GuessDirname(string targetDir) 
         {
@@ -75,20 +85,104 @@ namespace FileManager
             { 
                 return CurrentDirectory.FullName; 
             }
+        }
+
+
+        private string GuessDestinationDirname(string destinationDir) 
+        {
+            if (Directory.Exists(destinationDir)) 
+            {
+                return destinationDir;
+            }
+            if (!destinationDir.Contains(Path.DirectorySeparatorChar))
+            {
+               return CurrentDirectory.FullName + Path.DirectorySeparatorChar + destinationDir;
+            }
+            return CurrentDirectory.FullName;
             
         }
 
 
+        //Копирование файла при условии, что исходный файл есть 100%
+        private void CopyFile(string sourceFilename, string destinationFilename)
+        {
+            try
+            {
+                File.Copy(sourceFilename, destinationFilename, true);
+            }
+            catch (Exception e)
+            {
+                CancelCommand(e.Message);
+            }
+        }
 
+        private void CopyDirectory(string sourceDirectory, string destinationDirectory) 
+        { 
+             string[] subDirs = Directory.GetDirectories(sourceDirectory, "*", SearchOption.AllDirectories);
+            foreach (string subDir in subDirs)
+            {
+                try
+                {
+                    Directory.CreateDirectory(subDir.Replace(sourceDirectory, destinationDirectory));
+                } catch (Exception e) {
+                    CancelCommand(e.Message);
+                }
+            }
+
+            string[] files = Directory.GetFiles(sourceDirectory, "*.*", SearchOption.AllDirectories);
+            foreach (string file in files) 
+            {
+                try { 
+                    File.Copy(file, file.Replace(sourceDirectory, destinationDirectory), true);
+                } catch (Exception e) {
+                    CancelCommand(e.Message);
+                }
+            }
+            
+        }
+
+        private void CopyObjects(string source, string destination) 
+        {
+            Console.CursorVisible = false;
+            if (File.Exists(source)) 
+            {
+                CopyFile(source, destination);
+                return;
+            } 
+            source = GuessDirname((string)source);
+            destination= GuessDestinationDirname((string)destination);
+
+            if (Directory.Exists(source)) 
+            { 
+                CopyDirectory(source, destination);    
+            } 
+            else 
+            {
+                CancelCommand($"Объект {source} не обнаружен");
+            }
+           CurrentDirectory = CurrentDirectory ;
+            Console.CursorVisible = true;
+        }
+ 
         //Вспомогательная функция чтобы все синхронизировалось при изменении свойства CurrentDirectory
         private void ChangeDir(DirectoryInfo targetDir) 
         {
-            if (Directory.Exists(targetDir.ToString())) {
-                _currentDirectory = targetDir;
-                _bash.CurrentDirectory = targetDir.FullName;
-                _dirTree.CurrentDirectory = targetDir;
-                _infoPanel.CurrentDirectory = targetDir;
+            Console.CursorVisible = false; 
+            try
+            {
+                if (Directory.Exists(targetDir.ToString()))
+                {
+                    _currentDirectory = targetDir;
+                    _dirTree.CurrentDirectory = targetDir;
+                    _bash.CurrentDirectory = targetDir.FullName;
+                    _infoPanel.CurrentDirectory = targetDir;
+                }
             }
+            catch (Exception e) 
+            {
+                CancelCommand(e.Message);
+            }
+            Console.CursorVisible = true;
         }
 
 
@@ -107,7 +201,7 @@ namespace FileManager
 
                         break;
                     /*    
-                     *    Мне показалось как-то нелогично делать вывод виректории в которой не находишься в окне File manager'а
+                     *    Мне показалось как-то нелогично делать вывод директории в которой не находишься в окне File manager'а
                      *    поэтому буду использовать комманду ls просто чтобы менять страницы просмотра списка текущей директории
                     case "ls":
                         if (commandParams.Length > 1 && Directory.Exists(commandParams[1]))
@@ -144,6 +238,16 @@ namespace FileManager
                             _dirTree.Page++;
                         }
                         break;
+                    case "cp":
+                        if (commandParams.Length > 2)
+                        {
+                            CopyObjects(commandParams[1], commandParams[2]);
+                        }
+                        else 
+                        {
+                            CancelCommand("Неправильный формат команды");
+                        }
+                        break ;
                 }
             }
             //UpdateConsole();
