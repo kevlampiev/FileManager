@@ -39,12 +39,16 @@ namespace KEvlampiev.TerminalForms
                     Console.ForegroundColor = Color;
                     Console.BackgroundColor = BackgroundColor;
                     Console.Write(lineExtension);
-                    lineExtension = "";
+                    lineExtension = word;
                     currentLine++;
                 }
                 if (currentLine >= Height) { break;  }
                 lineExtension +=  (" " + word);
             }
+            Console.SetCursorPosition(Left + 1, currentLine);
+            Console.ForegroundColor = Color;
+            Console.BackgroundColor = BackgroundColor;
+            Console.Write(lineExtension);
 
         }
         override public void Repaint()
