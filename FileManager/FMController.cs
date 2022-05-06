@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KEvlampiev.TerminalForms;
+using System.Text.Json;
 
 namespace FileManager
 {
+
+   
+
 
     /// <summary>
     /// Создает объект - оператор, внутри сидят ничего не умеющие делать объекты для отображения, 
@@ -14,43 +18,54 @@ namespace FileManager
     /// </summary>
     public class FMController
     {
-        //размер окна и буфера для отображения
-        private int _windowHeight = 30;
-        private int _windowWidth = 120;
-        private DirectoryInfo _currentDirectory;
+        private Settings _settings;
 
         //Внутренние элементы для отображения
         private DirectoryViewWindow? _dirTree;
         private BashTerminal? _bash;
         private InfoPanel? _infoPanel;
 
-        public DirectoryInfo CurrentDirectory { get=>_currentDirectory; set { ChangeDir(value); } }
+        public DirectoryInfo CurrentDirectory { get=>new DirectoryInfo(_settings.CurrentDirectoryStr); set { ChangeDir(value); } }
 
         public FMController(int windowHeight, int windowWidth) 
         {
-            _windowHeight = windowHeight;
-            _windowWidth = windowWidth;
+            _settings = new Settings(windowHeight, windowWidth, Directory.GetCurrentDirectory() );
+            Init();
+            
+        }
+        public FMController(Settings settings)
+        {
+            _settings = settings;
+            Init();
+        }
+        /// <summary>
+        /// Инициализирует основные переменные при запуске. Сделано, чтобы не раздувать сильно конструкторы
+        /// </summary>
+        private void Init() 
+        {
             Console.Title = "File manager";
 
             //Эти две функции в Linux не работают
-            Console.SetWindowSize(_windowWidth, _windowHeight);
-            Console.SetBufferSize(_windowWidth, _windowHeight);
+            Console.SetWindowSize(_settings.WindowWidth, _settings.WindowHeight);
+            Console.SetBufferSize(_settings.WindowWidth, _settings.WindowHeight);
             //подумать чем их заменить 
-            
-            
-            _dirTree = new DirectoryViewWindow(0, 0, _windowWidth, _windowHeight - 10, "Directory tree");
-            _infoPanel = new InfoPanel(0, _windowHeight - 10, _windowWidth, 8, "Info");
-            _bash = new BashTerminal(0, _windowHeight - 1, _windowWidth, Directory.GetCurrentDirectory());
-            CurrentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+
+            _dirTree = new DirectoryViewWindow(0, 0, _settings.WindowWidth, _settings.WindowHeight - 10, "Directory tree");
+            _infoPanel = new InfoPanel(0, _settings.WindowHeight - 10, _settings.WindowWidth, 8, "Info");
+            _bash = new BashTerminal(0, _settings.WindowHeight - 1, _settings.WindowWidth, Directory.GetCurrentDirectory());
+            CurrentDirectory = CurrentDirectory;
 
             Repaint();
         }
+
 
         /// <summary>
         /// Перерисовка всех внутренних элеменов
         /// </summary>
         public void Repaint() 
         {
+            Console.ResetColor();
             Console.Clear();
             _dirTree.Repaint();
             _infoPanel.Repaint();
@@ -226,7 +241,7 @@ namespace FileManager
             {
                 if (Directory.Exists(targetDir.ToString()))
                 {
-                    _currentDirectory = targetDir;
+                    _settings.CurrentDirectoryStr = targetDir.FullName;
                     _dirTree.CurrentDirectory = targetDir;
                     _bash.CurrentDirectory = targetDir.FullName;
                     _infoPanel.CurrentDirectory = targetDir;
@@ -349,6 +364,8 @@ namespace FileManager
         {
             Console.ResetColor();
             Console.Clear();
+            string jsonText = JsonSerializer.Serialize(this._settings);
+            File.WriteAllText("FileManager.settings.json", jsonText);
         }
 
     }
