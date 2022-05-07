@@ -15,6 +15,10 @@ namespace KEvlampiev.TerminalForms
 
         //текущая страница
         private int _page=0;
+
+        //максимальное количество объектов на 1 страницу 
+        private int _linesPerPage;
+
         //контент (уже готовый к отрисовке согласно данной идеологии)
         private string[] _content;
 
@@ -29,6 +33,11 @@ namespace KEvlampiev.TerminalForms
         /// Общее количество строк во внутреннем пространстве окна
         /// </summary>
         public int InnerLines { get =>(Height-2); }
+
+        /// <summary>
+        /// Количество объектов на 1 страницу
+        /// </summary>
+        public int LinesPerPage { get=>_linesPerPage; set { SetLinesPerPage(value); } }
 
         /// <summary>
         /// Общее количество столбцов
@@ -50,16 +59,31 @@ namespace KEvlampiev.TerminalForms
         /// Список поддиректорий текущей директории
         /// </summary>
         public DirectoryInfo[] DirectoryTree { get; set; }
-        
+
+        public DirectoryViewWindow(int left, int top, int width, int height, string title, string currentDir, int linesPerPage) : base(left, top, width, height, title)
+        {
+            CurrentDirectory = new DirectoryInfo(currentDir);
+            if (linesPerPage <= 0 || linesPerPage > InnerLines) 
+            {
+                _linesPerPage = InnerLines;
+            } 
+            else 
+            {
+                _linesPerPage = linesPerPage;
+            }
+            
+        }
 
         public DirectoryViewWindow(int left, int top, int width, int height, string title, string currentDir):base(left,top,width,height,title)
         { 
             CurrentDirectory = new DirectoryInfo(currentDir);
+            _linesPerPage = InnerLines;
         }
 
         public DirectoryViewWindow(int left, int top, int width, int height, string title) : base(left, top, width, height, title)
         {
             CurrentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+            _linesPerPage = InnerLines;
         }
 
 
@@ -145,10 +169,24 @@ namespace KEvlampiev.TerminalForms
             Repaint();
         }
 
+        private void SetLinesPerPage(int lpp) 
+        {
+            if (lpp <= 0 || lpp > InnerLines)
+            {
+                _linesPerPage = InnerLines;
+            }
+            else 
+            { 
+                _linesPerPage = lpp;
+            }
+            Repaint();
+        } 
+
         private void SetPage(int page) 
         {
 
-            int totalPages=(_content.Length + InnerLines-2)/(InnerLines);
+            //int totalPages=(_content.Length + InnerLinesInnerLines-2)/(InnerLines);
+            int totalPages = (_content.Length + LinesPerPage - 2) / (LinesPerPage);
             if (page >= totalPages) { _page = 0; }
             else if (page < 0) 
             { _page = totalPages - 1; }
@@ -161,8 +199,11 @@ namespace KEvlampiev.TerminalForms
         //Вспомогательная функция. Заполняет внутренность окна 
         private void DrawDirectoryTree(DirectoryInfo dir) 
         {
-            int startDiapason = _page*InnerLines;
-            int endDiapason = Math.Min((_page+1)*InnerLines - 1, _content.Length -1);
+            //int startDiapason = _page*InnerLines;
+            //int endDiapason = Math.Min((_page+1)*InnerLines - 1, _content.Length -1);
+
+            int startDiapason = _page * LinesPerPage;
+            int endDiapason = Math.Min((_page + 1) * LinesPerPage - 1, _content.Length - 1);
 
             for (int pos = startDiapason, currentLine = Top+1; pos <= endDiapason; pos++, currentLine++)
             {
