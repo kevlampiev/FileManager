@@ -17,11 +17,17 @@ namespace FileManager
         //Текущая директория
         public string CurrentDirectoryStr { get; set; }
 
-        public Settings(int wHeight, int wWidth, string dir)
+        /// <summary>
+        /// Максимальное количество файлов и директорий на 1 странице листа просмотра
+        /// </summary>
+        public int LinesPerDirTreePage { get; set; }
+
+        public Settings(int wHeight, int wWidth, string dir, int linesPerPage)
         { 
             WindowHeight = wHeight;
             WindowWidth = wWidth;   
             CurrentDirectoryStr = dir;
+            LinesPerDirTreePage = Math.Max(linesPerPage,5);
         }
 
         public Settings() { }

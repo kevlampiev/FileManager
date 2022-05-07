@@ -29,7 +29,7 @@ namespace FileManager
 
         public FMController(int windowHeight, int windowWidth) 
         {
-            _settings = new Settings(windowHeight, windowWidth, Directory.GetCurrentDirectory() );
+            _settings = new Settings(windowHeight, windowWidth, Directory.GetCurrentDirectory(), 0 );
             Init();
             
         }
@@ -51,10 +51,10 @@ namespace FileManager
             //подумать чем их заменить 
 
 
-            _dirTree = new DirectoryViewWindow(0, 0, _settings.WindowWidth, _settings.WindowHeight - 10, "Directory tree");
-            _infoPanel = new InfoPanel(0, _settings.WindowHeight - 10, _settings.WindowWidth, 8, "Info");
-            _bash = new BashTerminal(0, _settings.WindowHeight - 1, _settings.WindowWidth, Directory.GetCurrentDirectory());
-            CurrentDirectory = CurrentDirectory;
+            _dirTree = new DirectoryViewWindow(0, 0, _settings.WindowWidth, _settings.WindowHeight - 10, "Directory tree", _settings.CurrentDirectoryStr, _settings.LinesPerDirTreePage);
+            _infoPanel = new InfoPanel(0, _settings.WindowHeight - 10, _settings.WindowWidth, 8, "Info", _settings.CurrentDirectoryStr);
+            _bash = new BashTerminal(0, _settings.WindowHeight - 1, _settings.WindowWidth, _settings.CurrentDirectoryStr);
+            //CurrentDirectory = CurrentDirectory;
 
             Repaint();
         }
