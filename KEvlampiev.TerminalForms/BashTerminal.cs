@@ -42,7 +42,7 @@ namespace KEvlampiev.TerminalForms
             string result = CurrentDirectory;
             if (result.Length >= (MaxPromptLength-1)) 
             {
-                result = "~" + Path.GetDirectoryName(result);
+                result = "~/" + Path.GetFileName(result);
             }
             return result + "$";
         }
@@ -62,9 +62,15 @@ namespace KEvlampiev.TerminalForms
         public override void Repaint()
         {
             Console.ResetColor();
+            //чистим
+            Console.SetCursorPosition(Left, Top);
+            Console.Write("".PadLeft(Width-1, ' '));
+            //рисуем
             Console.SetCursorPosition(Left, Top);
             Console.Write(GetPrompt());
+            Console.SetCursorPosition(StartCommandLinePos, Top);
             Console.Write(GetVisiblePartOfTheCommand());
+            
         }
     }
 }
