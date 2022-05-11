@@ -25,6 +25,8 @@ namespace FileManager
         private BashTerminal? _bash;
         private InfoPanel? _infoPanel;
 
+        private string _logFilename;
+
         public DirectoryInfo CurrentDirectory { get=>new DirectoryInfo(_settings.CurrentDirectoryStr); set { ChangeDir(value); } }
 
         public FMController(int windowHeight, int windowWidth) 
@@ -56,6 +58,8 @@ namespace FileManager
             _bash = new BashTerminal(0, _settings.WindowHeight - 1, _settings.WindowWidth, _settings.CurrentDirectoryStr);
             //CurrentDirectory = CurrentDirectory;
 
+            _logFilename = "FileMAnager.log";
+
             Repaint();
         }
 
@@ -77,6 +81,7 @@ namespace FileManager
         private void CancelCommand(string message) 
         { 
             Utils.DisplayError(message);
+            File.AppendAllText(_logFilename, $"{DateTime.Now} Команда <{_bash.Command}> вызвала исключение <{message}> "+ Environment.NewLine);
             Repaint();
             _bash.Command = new StringBuilder();
         }
