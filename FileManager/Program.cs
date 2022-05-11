@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KEvlampiev.TerminalForms;
+using System.Text.Json;
+
 
 namespace FileManager
 {
@@ -12,21 +14,26 @@ namespace FileManager
         const int WINDOW_HEIGHT = 30;
         const int WINDOW_WIDTH = 120;
 
+        const string SETTINGS_FILE = "FileManager.settings.json";
+
+ 
         static void Main(string[] arg)
         {
-            Console.Title = "File manager";
-            Console.SetWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-            Console.SetBufferSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-            ConsoleWindow dirTree = new ConsoleWindow(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT-10, "Directory tree");
-            ConsoleWindow infoPanel = new ConsoleWindow(0, WINDOW_HEIGHT-10, WINDOW_WIDTH, 8, "Info");
-            BashTerminal bash = new BashTerminal(0, WINDOW_HEIGHT-1, WINDOW_WIDTH, @"c:\" );
-            Console.Clear();
-            dirTree.Repaint();
-            infoPanel.Repaint();
-            bash.Repaint();
-
-            Console.ReadKey(true);
+            FMController fMController;
+            //Это очень важное дополнение 
+            if (!File.Exists(SETTINGS_FILE)) 
+            {
+                 fMController = new FMController(WINDOW_HEIGHT, WINDOW_WIDTH);
+            } 
+            else 
+            { 
+                string json = File.ReadAllText(SETTINGS_FILE);
+                Settings settings = JsonSerializer.Deserialize<Settings>(json);
+                fMController = new FMController(settings);
+            }
+            
+            fMController.Run();
+            fMController.Done();
 
         }
     }

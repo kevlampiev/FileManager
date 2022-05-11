@@ -43,7 +43,14 @@ namespace KEvlampiev.TerminalForms
         }
 
         public abstract void Repaint();
-        
 
+        /// <summary>
+        /// Получает козицию курсора
+        /// </summary>
+        /// <returns> Пара значений номера колонки и номера строки экрана</returns>
+        public (int col, int row) GetCursorPos()
+        { 
+            return (Console.CursorLeft, Console.CursorTop);
+        }
     }
 }
