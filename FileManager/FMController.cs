@@ -25,19 +25,44 @@ namespace FileManager
         private BashTerminal? _bash;
         private InfoPanel? _infoPanel;
 
-        private string _logFilename;
 
+        //Перечень всех ранее введенных комманд для хранения в памяти 
+        private string[] _historyList;
+        //Переменная для листания истории команд
+        private int _positionInHistory;
+
+        /// <summary>
+        /// Текущая директрория
+        /// </summary>
         public DirectoryInfo CurrentDirectory { get=>new DirectoryInfo(_settings.CurrentDirectoryStr); set { ChangeDir(value); } }
+
+        /// <summary>
+        /// Позиция в истории команд
+        /// </summary>
+        public int PositionInHistory { get=>_positionInHistory; set { SetPositionInHistory(value);} }
+
+        private void SetPositionInHistory(int value) 
+        {
+            if (_historyList.Length == 0) 
+            {
+                _positionInHistory = -1;
+                return;
+            }
+
+            if (value < _historyList.Length||value>-1) { _positionInHistory = value; }
+        }
 
         public FMController(int windowHeight, int windowWidth) 
         {
-            _settings = new Settings(windowHeight, windowWidth, Directory.GetCurrentDirectory(), 0 );
+            _settings = new Settings(windowHeight, windowWidth, Directory.GetCurrentDirectory(), 0 , "FileManager.cmdhistory.txt", "FileManager.err.log");
             Init();
             
         }
         public FMController(Settings settings)
         {
             _settings = settings;
+            if (String.IsNullOrEmpty(_settings.CommandHistoryFilename)) _settings.CommandHistoryFilename = "FileManager.cmdhistory.txt";
+            if (String.IsNullOrEmpty(_settings.LogFilename)) _settings.LogFilename = "FileManager.err.log";
             Init();
         }
         /// <summary>
@@ -58,8 +83,16 @@ namespace FileManager
             _bash = new BashTerminal(0, _settings.WindowHeight - 1, _settings.WindowWidth, _settings.CurrentDirectoryStr);
             //CurrentDirectory = CurrentDirectory;
 
-            _logFilename = "FileMAnager.log";
-
+            try
+            {
+                _historyList = File.ReadAllLines(_settings.CommandHistoryFilename);
+                _positionInHistory = _historyList.Length - 1;
+            }
+            catch (Exception ex) 
+            { 
+                _historyList = new string[0];
+                _positionInHistory = -1;
+            }
             Repaint();
         }
 
@@ -81,11 +114,19 @@ namespace FileManager
         private void CancelCommand(string message) 
         { 
             Utils.DisplayError(message);
-            File.AppendAllText(_logFilename, $"{DateTime.Now} Команда <{_bash.Command}> вызвала исключение <{message}> "+ Environment.NewLine);
+            File.AppendAllText(_settings.LogFilename??"FileManager.err.log", $"{DateTime.Now} Команда <{_bash.Command}> вызвала исключение <{message}> "+ Environment.NewLine);
             Repaint();
             _bash.Command = new StringBuilder();
         }
- 
+
+
+        //Вспомогательная функция для доставания произвольной команды из истории и поставления ее в строку
+        private void GetCommandFromHistory(int index) 
+        {
+            if (_historyList.Length > 0 && index>-1 && index<_historyList.Length) {
+                _bash.Command = new StringBuilder(_historyList[index]);
+            }
+        }
 
         //Вспомогательная функция, поскольку просто так и не угадаешь, что введет пользователь после "cd", "cp" или "rm"
         private string GuessDirname(string targetDir) 
@@ -322,19 +363,33 @@ namespace FileManager
                     default: CancelCommand("Неизвестная команда"); break;
 
                 }
+                //Добавляем комманду для последующего использования в файле истории
+                AddCommandToHistory(command.ToString());
             }
             //UpdateConsole();
+        }
+
+        //Вспомогательная функция для добавления команды в историю 
+        private void AddCommandToHistory(string commandStr) 
+        {
+            if (commandStr.Trim() == "") return;
+            File.AppendAllText(_settings.CommandHistoryFilename?? "FileManager.cmdhistory.txt", commandStr + Environment.NewLine);
+            //Мучительно добавляем новый элемент в массив
+            //Мучительно добавляем новый элемент в массив
+            int newArrSize = _historyList.Length + 1;
+            Array.Resize<string>(ref _historyList, newArrSize);
+            _historyList[newArrSize -1] = commandStr;
         }
 
         public void Run()
         {
             (int row, int col) = Utils.GetCursorPosition();
             StringBuilder command = new StringBuilder();
-            char key;
+            ConsoleKeyInfo keyInfo;
             while (true)
             {
-                key = Console.ReadKey().KeyChar;
-                if (key == (byte)ConsoleKey.Backspace)
+                keyInfo = Console.ReadKey();
+                if (keyInfo.Key == ConsoleKey.Backspace)
                 {
                     if (command.Length > 0)
                     {
@@ -348,16 +403,36 @@ namespace FileManager
                     _bash.Repaint();
                     continue;
                 }
-                if (key == (byte)ConsoleKey.Enter)
+                if (keyInfo.Key == ConsoleKey.Enter)
                 {
-                    ParseCommandString(command.ToString());
+                    ParseCommandString(_bash.Command.ToString());
+                    
                     command.Clear();
                     _bash.Command = command;
                     _bash.Repaint();
                     //Здесь что-то отсылается на исполнение и очищается command и записывается в лог
                     continue;
                 }
-                command.Append(key);
+
+                if (keyInfo.Key == ConsoleKey.UpArrow) 
+                {
+                    command.Clear();
+                    GetCommandFromHistory(--PositionInHistory);
+                    _bash.Repaint();
+                    continue;
+                }
+
+                if (keyInfo.Key == ConsoleKey.DownArrow)
+                {
+                    command.Clear();
+                    GetCommandFromHistory(++PositionInHistory);
+                    _bash.Repaint();
+                    continue;
+                }
+
+
+
+                command.Append(keyInfo.KeyChar);
                 _bash.Command = command;
                 _bash.Repaint();
                 if (command.ToString() == "exit" || command.ToString() == "quit") { break; }

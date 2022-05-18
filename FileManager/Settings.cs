@@ -22,12 +22,26 @@ namespace FileManager
         /// </summary>
         public int LinesPerDirTreePage { get; set; }
 
-        public Settings(int wHeight, int wWidth, string dir, int linesPerPage)
+
+        /// <summary>
+        /// Имя файла для хранения логов
+        /// </summary>
+        public string LogFilename { get; set; }
+        /// <summary>
+        /// Имя файла для хранения истории команд
+        /// </summary>
+        public string CommandHistoryFilename { get; set; }
+
+
+        public Settings(int wHeight, int wWidth, string dir, int linesPerPage, string _commandHistory, string _logFile)
         { 
             WindowHeight = wHeight;
             WindowWidth = wWidth;   
             CurrentDirectoryStr = dir;
             LinesPerDirTreePage = Math.Max(linesPerPage,5);
+            LogFilename = _logFile??"FileManager.err.log";
+            CommandHistoryFilename = _commandHistory??"FileManager.cmdhistory.txt";
+
         }
 
         public Settings() { }
