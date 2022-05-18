@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileManager", "FileManager\FileManager.csproj", "{CF32C82B-F1B0-4179-AA92-A497161278B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileManager", "FileManager\FileManager.csproj", "{CF32C82B-F1B0-4179-AA92-A497161278B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KEvlampiev.TerminalForms", "KEvlampiev.TerminalForms\KEvlampiev.TerminalForms.csproj", "{9CBDE633-D71C-4380-B819-BB906580C683}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KEvlampiev.TerminalForms", "KEvlampiev.TerminalForms\KEvlampiev.TerminalForms.csproj", "{9CBDE633-D71C-4380-B819-BB906580C683}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{623920AA-34CA-486B-AF94-7F11598EBB76}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
